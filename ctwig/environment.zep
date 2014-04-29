@@ -1,5 +1,14 @@
+/*
+ * This file is part of CTwig.
+ *
+ * (c) 2014 Steve Lo
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
- * Stores the Twig configuration.
+ * Stores the CTwig configuration.
  *
  * @author Steve Lo <info@sd.idv.tw>
  */
@@ -72,6 +81,7 @@ class Environment
      *                   (default to -1 which means that all optimizations are enabled;
      *                   set it to 0 to disable).
      *
+     * @param CTwig_LoaderInterface $loader  A CTwig\LoaderInterface instance
      * @param array                $options An array of options
      */
 	public function __construct(options=null)
