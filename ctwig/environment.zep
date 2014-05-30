@@ -84,7 +84,7 @@ class Environment
      * @param CTwig_LoaderInterface $loader  A CTwig\LoaderInterface instance
      * @param array                $options An array of options
      */
-	public function __construct(options=null)
+	public function __construct(<CTwig\LoaderInterface> loader = null,options=null)
 	{
         var default_options;
         let default_options = [
