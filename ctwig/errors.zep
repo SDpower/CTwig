@@ -188,70 +188,81 @@ class Errors extends \Exception
 
     protected function guessTemplateInfo()
     {
-//         var template, templateClass, backtrace, trace, key, r, file, definition;
-//         let template = null;
-//         let templateClass = null;
+        var template, templateClass, backtrace, trace, key, r, file, definition, currentClass, isEmbedContainer,
+        e, exceptions, traces, vtrace, templateLine, codeLine;
+        let template = null;
+        let templateClass = null;
 
-//         if (version_compare(phpversion(), "5.3.6", ">=")) {
-//             let backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT);
-//         } else {
-//             let backtrace = debug_backtrace();
-//         }
+        if (version_compare(phpversion(), "5.3.6", ">=")) {
+            let backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT);
+        } else {
+            let backtrace = debug_backtrace();
+        }
 
-//         /*if typeof backtrace == "array" {
-//         var CTwigTemplate = "CTwig\\Template";
-//             for key, trace in backtrace {
-//                 let definition = trace["object"];
-//                 if typeof definition == "object" {
-//                     if (definition instanceof Template && CTwigTemplate !== get_class(definition)){                        
-//                         let isEmbedContainer = 0 === strpos(templateClass, currentClass);
-//                         if (null === this->filename || (this->filename == trace["object"]->getTemplateName() && !isEmbedContainer)) {
-//                             let template = definition;
-//                             let templateClass = get_class(definition);
-//                         }
-//                     }
-//                 }
-//             }
-//         }*/
+        if typeof backtrace == "array" {
+            var CTwigTemplate = "CTwig\\Template";
+            for key, trace in backtrace {
+                let definition = trace["object"];
+                if typeof definition == "object" {
+                    if ((definition instanceof \CTwig\Template) &&
+                        (CTwigTemplate !== get_class(definition)) ){       
+                        let currentClass = get_class(definition);                 
+                        let isEmbedContainer = 0 === strpos(templateClass, currentClass);
+                        if (null === this->filename || (this->filename == definition->getTemplateName() && !isEmbedContainer)) {
+                            let template = definition;
+                            let templateClass = get_class(definition);
+                        }
+                    }
+                }
+            }
+        }
 
-//         // update template filename
-//         if (null !== template && null === this->filename) {
-//             let this->filename = template->getTemplateName();
-//         }
+        // update template filename
+        if (null !== template && null === this->filename) {
+            let this->filename = template->getTemplateName();
+        }
 
-//         if (null === template || this->lineno > -1) {
-//             return;
-//         }
+        if (null === template || this->lineno > -1) {
+            return;
+        }
 
-//         let r = new \ReflectionObject(template);
-//         let file = r->getFileName();
+        let r = new \ReflectionObject(template);
+        let file = r->getFileName();
 
-//         // hhvm has a bug where eval'ed files comes out as the current directory
-//         if (is_dir(file)) {
-//             let file = "";
-//         }
+        // hhvm has a bug where eval'ed files comes out as the current directory
+        if (is_dir(file)) {
+            let file = "";
+        }
 
-// /**        let exceptions = array($e = $this);
-//         while ((e instanceof self || method_exists(e, 'getPrevious')) && $e = $e->getPrevious()) {
-//             $exceptions[] = $e;
-//         }
+        let exceptions = [ this ];
+        let e = this;
+        while (((e instanceof \CTwig\Errors) || method_exists(e, "getPrevious")) && e == e->getPrevious()) {
+            let exceptions[] = e;
+        }
+        let e = true;
+        while (!is_null(e)) {
+            let e = array_pop(exceptions);
+            if (!is_null(e)){
+                let traces = e->getTrace();
+                let vtrace = true;
+                while (!is_null(vtrace)) {
+                    let vtrace = array_shift(traces);
+                    if (!is_null(vtrace)){
+                        if (!isset(vtrace["file"]) || !isset(vtrace["line"]) || file != vtrace["file"]) {
+                            continue;
+                        }
 
-//         while ($e = array_pop($exceptions)) {
-//             $traces = $e->getTrace();
-//             while ($trace = array_shift($traces)) {
-//                 if (!isset($trace['file']) || !isset($trace['line']) || $file != $trace['file']) {
-//                     continue;
-//                 }
+                        for codeLine, templateLine in template {
+                            if (codeLine <= vtrace["line"]) {
+                                // update template line
+                                let this->lineno = templateLine;
 
-//                 foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
-//                     if ($codeLine <= $trace['line']) {
-//                         // update template line
-//                         $this->lineno = $templateLine;
-
-//                         return;
-//                     }
-//                 }
-//             }
-//         }**/
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
